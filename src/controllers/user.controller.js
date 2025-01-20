@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
+import {asyncHandler} from "../utils/AsyncHandler.js"
 import {ApiError} from "../utils/ApiError.js"
 import { User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
@@ -135,8 +135,8 @@ const loginUser= asyncHandler(async(req, res)=>{
 
     return res
     .status(200)
-    .cookie(accessToken)
-    .cookie(refreshToken)
+    .cookie('accessToken', accessToken, options)
+    .cookie('refreshToken', refreshToken, options)
     .json(
         new ApiResponse(200,
             {
@@ -148,8 +148,33 @@ const loginUser= asyncHandler(async(req, res)=>{
     )
 })
 
+const logoutUser= asyncHandler(async(req, res)=>{
+    await User.findByIdAndUpdate(req.user._id,
+        {
+            $unset:{
+                refreshToken:1 //removing the filed
+            }
+        },
+        {
+            new:true
+        }
+    )
+
+    const options={
+        httpOnly:true,
+        secure:true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out"))
+})
+
 export {
    registerUser,
-   loginUser
+   loginUser,
+   logoutUser
 }
 
