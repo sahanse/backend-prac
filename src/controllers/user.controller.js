@@ -221,9 +221,23 @@ const refreshAccessToken=asyncHandler(async(req, res)=>{
 
 })
 
+const changePassword= asyncHandler(async(req, res)=>{
+    const {oldPass, newPass, confPass}=req.body;
+
+    if(newPass !== confPass){
+        throw new ApiError(400, "")
+    }
+
+    const user= await User.findById(req.user?._id).select("id password")
+
+    const isPasswordCorrect= await user.isPasswordCorrect(oldPass)
+
+})
+
 export {
    registerUser,
    loginUser,
    logoutUser,
-   refreshAccessToken
+   refreshAccessToken,
+   changePassword
 }
